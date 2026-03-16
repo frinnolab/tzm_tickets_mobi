@@ -70,167 +70,232 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     }
   }
 
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'open':
+        return const Color(0xFF2FA862);
+      case 'pending':
+        return const Color(0xFFE5BB31);
+      case 'closed':
+        return Colors.grey.shade600;
+      default:
+        return Colors.blueGrey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.ticket['title'] ?? 'Ticket Detail')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Status: $_status',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  if (_status.toLowerCase() != 'closed')
-                    _isClosing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : TextButton.icon(
-                            onPressed: _closeTicket,
-                            icon: const Icon(Icons.close, color: Colors.red),
-                            label: const Text(
-                              'Close Ticket',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Description:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(widget.ticket['description'] ?? ''),
+    final ticketId = widget.ticket['id']?.toString() ?? '?';
 
-              Consumer<SettingsProvider>(
-                builder: (context, settings, child) {
-                  if (!settings.enableAi) {
-                    return const SizedBox.shrink(); // Hide the AI UI completely
-                  }
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF0F2F5),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1D364A),
+        foregroundColor: Colors.white,
+        title: const Text('Back', style: TextStyle(fontSize: 18)),
+        titleSpacing: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Ticket Info Card
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Divider(height: 32),
-                      const Text(
-                        'AI Suggestion Module',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                      Text(
+                        'Ticket #TKT-$ticketId',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      if (_isLoading)
-                        const Center(child: CircularProgressIndicator())
-                      else if (_suggestion != null || _errorMessage != null)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (_errorMessage != null)
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                margin: const EdgeInsets.only(bottom: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.withAlpha(25),
-                                  border: Border.all(color: Colors.red),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(
-                                      Icons.error_outline,
-                                      color: Colors.red,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        _errorMessage!,
-                                        style: const TextStyle(
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            if (_suggestion != null)
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: _isMock == true
-                                      ? Colors.orange.withAlpha(25)
-                                      : Colors.green.withAlpha(25),
-                                  border: Border.all(
-                                    color: _isMock == true
-                                        ? Colors.orange
-                                        : Colors.green,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          _isMock == true
-                                              ? Icons.warning_amber
-                                              : Icons.check_circle,
-                                          color: _isMock == true
-                                              ? Colors.orange
-                                              : Colors.green,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            _isMock == true
-                                                ? 'Mock Fallback Suggestion'
-                                                : 'AI Suggestion',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: _isMock == true
-                                                  ? Colors.orange.shade800
-                                                  : Colors.green.shade800,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      _suggestion!,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        )
-                      else
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.auto_awesome),
-                          label: const Text('Get AI Suggestion'),
-                          onPressed: _getSuggestion,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
                         ),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(_status),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _status.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ],
-                  );
-                },
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.ticket['title'] ?? 'No Title',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.ticket['description'] ?? '',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // AI Suggestion Output Card (if available/error)
+            Consumer<SettingsProvider>(
+              builder: (context, settings, child) {
+                if (!settings.enableAi) return const SizedBox.shrink();
+
+                if (_isLoading) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                if (_suggestion != null || _errorMessage != null) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              _errorMessage != null
+                                  ? Icons.error
+                                  : (_isMock == true
+                                        ? Icons.warning_amber
+                                        : Icons.auto_awesome),
+                              color: _errorMessage != null
+                                  ? Colors.red
+                                  : (_isMock == true
+                                        ? Colors.orange
+                                        : const Color(0xFF1D6763)),
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _errorMessage != null
+                                  ? 'AI Request Failed'
+                                  : (_isMock == true
+                                        ? 'AI Mock Suggestion'
+                                        : 'AI Suggested Resolution'),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: _errorMessage != null
+                                    ? Colors.red
+                                    : (_isMock == true
+                                          ? Colors.orange
+                                          : const Color(0xFF1D6763)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _errorMessage ?? _suggestion!,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: _errorMessage != null
+                                ? Colors.red
+                                : Colors.black87,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                // Get AI Suggestion Button
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1D6763),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: _getSuggestion,
+                    child: const Text(
+                      'GET AI SUGGESTION',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 16),
+
+            // Footer actions (View History, Close Ticket)
+            Column(
+              children: [
+                // TextButton(
+                //   onPressed: () {}, // Dummy action
+                //   child: const Text(
+                //     'View History',
+                //     style: TextStyle(color: Colors.black87, fontSize: 14),
+                //   ),
+                // ),
+                if (_status.toLowerCase() != 'closed')
+                  _isClosing
+                      ? const CircularProgressIndicator()
+                      : TextButton(
+                          onPressed: _closeTicket,
+                          child: const Text(
+                            'Close Ticket',
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+              ],
+            ),
+          ],
         ),
       ),
     );
