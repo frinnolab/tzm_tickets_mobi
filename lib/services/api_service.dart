@@ -1,9 +1,21 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  
+// lib/services/api_service.dart
+  static String get baseUrl {
+    if (kReleaseMode) {
+      return 'https://tzm.frinno-lab.site/api';
+    }
+    if (Platform.isAndroid) {
+      return 'http://10.0.2.2:8001/api';
+    }
+    return 'http://127.0.0.1:8001/api';
+  }
 
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -104,5 +116,20 @@ class ApiService {
       return jsonDecode(response.body);
     }
     throw Exception('Failed to close ticket');
+  }
+
+  Future<Map<String, dynamic>> fetchUser() async {
+    final token = await getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/user'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+    throw Exception('Failed to load user info');
   }
 }
