@@ -6,10 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   
-// lib/services/api_service.dart
+
   static String get baseUrl {
     if (kReleaseMode) {
-      return 'https://tzm.frinno-lab.site/api';
+      return 'http://tzm.frinno-lab.site/api';
     }
     if (Platform.isAndroid) {
       return 'http://10.0.2.2:8001/api';

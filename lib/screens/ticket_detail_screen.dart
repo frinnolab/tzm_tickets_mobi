@@ -273,13 +273,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             // Footer actions (View History, Close Ticket)
             Column(
               children: [
-                // TextButton(
-                //   onPressed: () {}, // Dummy action
-                //   child: const Text(
-                //     'View History',
-                //     style: TextStyle(color: Colors.black87, fontSize: 14),
-                //   ),
-                // ),
+
                 if (_status.toLowerCase() != 'closed')
                   _isClosing
                       ? const CircularProgressIndicator()
